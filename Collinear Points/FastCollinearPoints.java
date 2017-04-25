@@ -2,99 +2,61 @@ import edu.princeton.cs.algs4.*;
 import java.util.*;
 /*
  * author :zhe tan
- * date: 04/23/2017
+ * date: 04/25/2017
  * public class FastCollinearPoints{
  *     public FastCollinearPoints(Point[] points) // finds all line segments containing 4 (or more) points
  *     public int numberOfSegments() // the number of line segments
  *     public LineSegment[] segments()// the line segments
  * }
  */
+//the final version of this project get 100/100
+//first do the natural sort
+//then do the sort based on the slopeOrder
+
 
 //for every point p, compute the slope other points make with p
 //sort the slopes
 //check if 3 adjacent points have equal slopes
 
 public class FastCollinearPoints{
-    private Point[] mypoints;
-    private LineSegment[] lineSegment;
-    private HashMap<Double, List<Point>> map;
-    private List<LineSegment> segment;
+    private List<LineSegment> lineSegments = new ArrayList<>();
     public FastCollinearPoints(Point[] points) {
         checkPoints(points);
-        mypoints = new Point[points.length];
-
-        mypoints = Arrays.copyOf(points, points.length);
-        segment = new ArrayList<LineSegment>();
-        map = new HashMap<>();
-        
-       
-        for(int j = 0; j<points.length; j++) {
-            Point p = points[j];
-           
-            Arrays.sort(mypoints, p.slopeOrder());
-            
-            
-            List<Point> slopePoint = new ArrayList<>();
-            double slope = 0;
-            double slopeP = Double.NEGATIVE_INFINITY;
-            
-            for(int i = 1; i<mypoints.length; i++) {
-                slope = p.slopeTo(mypoints[i]);
-                if(slope == slopeP) {
-                    slopePoint.add(mypoints[i]);
-                }
-                else {
-                    if(slopePoint.size() >=3) {
-                        slopePoint.add(p);
-                        findSegments(slopePoint, slopeP);
-                        
-                    }
-                    slopePoint.clear();
-                    slopePoint.add(mypoints[i]);
-                }
-                slopeP = slope;
-            }
-            if(slopePoint.size() >=3) {
-                slopePoint.add(p);
-                findSegments(slopePoint, slope);
-            }
-        }
-   
-        lineSegment = segment.toArray(new LineSegment[segment.size()]);
+        Point[] sortedPoints = Arrays.copyOf(points, points.length);
+        Arrays.sort(sortedPoints);
+        findLineSegments(sortedPoints);
     }
     
     public int numberOfSegments(){
-        return segment.size();
+        return lineSegments.size();
     }
     
     public LineSegment[] segments() {
-        return Arrays.copyOf(lineSegment, numberOfSegments());
+        return lineSegments.toArray(new LineSegment[lineSegments.size()]);
     }
     
-    private void findSegments(List<Point> slopePoint, double slope) { 
-        List<Point> already = map.get(slope);
-        Collections.sort(slopePoint);
-        Point start = slopePoint.get(0);
-        Point end = slopePoint.get(slopePoint.size()-1);
-        
-        if(already == null) {
-            already = new ArrayList<>();
-            already.add(end);
-            map.put(slope, already);
-            segment.add(new LineSegment(start, end));
-        }
-        else {
-            for(Point current: already) {
-                if(end.compareTo(current) == 0) {
-                    return;
+    private void findLineSegments(Point[] points) { 
+        for( int i = 0; i<points.length && !interrupted(); i++) {
+            Comparator<Point> slopeOrder = points[i].slopeOrder();
+            Arrays.sort(points, slopeOrder);
+            int j = 2;
+            while(j < points.length) {
+                int start = j-1;
+                while( j< points.length && slopeOrder.compare(points[j-1], points[j]) == 0) {
+                    j++;
                 }
+                if(j - start >= 3 && points[0].compareTo(points[start]) < 0) {
+                    lineSegments.add(new LineSegment(points[0], points[j-1]));
+                }
+                j++;
             }
-            already.add(end);
-            segment.add(new LineSegment(start, end));
+            Arrays.sort(points);
         }
-              
     }
     
+    private boolean interrupted() {
+        return Thread.currentThread().isInterrupted();       
+    }
     private void checkPoints(Point[] points) {
         for(int i = 0; i<points.length-1; i++) {
             if(points[i] == null) {
@@ -134,5 +96,6 @@ public class FastCollinearPoints{
             segment.draw();
         }
         StdDraw.show();
+
     }
 }
