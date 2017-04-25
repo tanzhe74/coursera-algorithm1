@@ -17,82 +17,96 @@ import java.util.*;
 public class FastCollinearPoints{
     private Point[] mypoints;
     private LineSegment[] lineSegment;
-    private ArrayList<LineSegment> segment;
-    private ArrayList<String> segmentString;
+    private HashMap<Double, List<Point>> map;
+    private List<LineSegment> segment;
     public FastCollinearPoints(Point[] points) {
+        checkPoints(points);
         mypoints = new Point[points.length];
+
         mypoints = Arrays.copyOf(points, points.length);
         segment = new ArrayList<LineSegment>();
-        segmentString = new ArrayList<String>();
-        Arrays.sort(mypoints);
+        map = new HashMap<>();
+        
        
-        for(Point p: mypoints) {
+        for(int j = 0; j<points.length; j++) {
+            Point p = points[j];
+           
             Arrays.sort(mypoints, p.slopeOrder());
-            findSegments(mypoints);
+            
+            
+            List<Point> slopePoint = new ArrayList<>();
+            double slope = 0;
+            double slopeP = Double.NEGATIVE_INFINITY;
+            
+            for(int i = 1; i<mypoints.length; i++) {
+                slope = p.slopeTo(mypoints[i]);
+                if(slope == slopeP) {
+                    slopePoint.add(mypoints[i]);
+                }
+                else {
+                    if(slopePoint.size() >=3) {
+                        slopePoint.add(p);
+                        findSegments(slopePoint, slopeP);
+                        
+                    }
+                    slopePoint.clear();
+                    slopePoint.add(mypoints[i]);
+                }
+                slopeP = slope;
+            }
+            if(slopePoint.size() >=3) {
+                slopePoint.add(p);
+                findSegments(slopePoint, slope);
+            }
         }
+   
         lineSegment = segment.toArray(new LineSegment[segment.size()]);
     }
     
     public int numberOfSegments(){
-        return lineSegment.length;
+        return segment.size();
     }
     
     public LineSegment[] segments() {
-        return lineSegment;
+        return Arrays.copyOf(lineSegment, numberOfSegments());
     }
     
-    private void findSegments(Point[] points) {
-//        for(Point p: points) {
-//            StdOut.print(p.toString()+" ");
-//        }
-//        StdOut.println();
-        Point p = points[0];
-        int count = 1;
-        double slopeP = p.slopeTo(points[1]);
-        int startIndex = 0;
-        for(int i = 1; i<points.length; i++) {
-            double slope = p.slopeTo(points[i]);
-            if(slopeP == slope) {
-                count++;
-            }
-            else {
-                if(count >= 4) {
-                    Point[] temp = new Point[i-startIndex+1];
-                    
-                    for(int j = 0; j<temp.length-1; j++) {
-                        temp[j] = points[j+startIndex];
-                    }
-                   
-                    temp[temp.length-1] = points[0];
-                    Arrays.sort(temp);
-                    
-                    LineSegment s = new LineSegment(temp[0], temp[temp.length-1]);
-
-                    if(!segmentString.contains(s.toString())) {
-                        segment.add(s);  
-                        segmentString.add(s.toString());
-                    }        
+    private void findSegments(List<Point> slopePoint, double slope) { 
+        List<Point> already = map.get(slope);
+        Collections.sort(slopePoint);
+        Point start = slopePoint.get(0);
+        Point end = slopePoint.get(slopePoint.size()-1);
+        
+        if(already == null) {
+            already = new ArrayList<>();
+            already.add(end);
+            map.put(slope, already);
+            segment.add(new LineSegment(start, end));
+        }
+        else {
+            for(Point current: already) {
+                if(end.compareTo(current) == 0) {
+                    return;
                 }
-                count = 2;
-                slopeP = slope;
-                startIndex = i;
+            }
+            already.add(end);
+            segment.add(new LineSegment(start, end));
+        }
+              
+    }
+    
+    private void checkPoints(Point[] points) {
+        for(int i = 0; i<points.length-1; i++) {
+            if(points[i] == null) {
+                throw new NullPointerException();
+            }
+            for( int j = i+1; j<points.length; j++) {
+                if(points[i].compareTo(points[j]) == 0) {
+                    throw new IllegalArgumentException();
+                }
             }
         }
-        if(count >= 4) {
-            Point[] temp = new Point[points.length-startIndex+1];
-            for(int j = 0; j<temp.length-1; j++) {
-                temp[j] = points[j+startIndex];
-            }
-            temp[temp.length-1] = points[0];
-            Arrays.sort(temp);
-            LineSegment s = new LineSegment(temp[0], temp[temp.length-1]);
-            if(!segmentString.contains(s.toString())) {
-                segment.add(s);  
-                segmentString.add(s.toString());
-            }  
-        }               
     }
-    
     
     public static void main(String[] args) {
         In in = new In(args[0]);
