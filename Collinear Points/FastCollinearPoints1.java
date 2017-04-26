@@ -14,6 +14,8 @@ import java.util.*;
 //sort the slopes
 //check if 3 adjacent points have equal slopes
 
+//The first version, using hashmap to detect whether the linesegment is already there
+//didn't pass the time test and get a 98 score
 public class FastCollinearPoints1{
     private Point[] mypoints;
     private LineSegment[] lineSegment;

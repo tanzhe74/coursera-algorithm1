@@ -9,15 +9,19 @@ import java.util.*;
  *     public LineSegment[] segments()// the line segments
  * }
  */
-//the final version of this project get 100/100
-//first do the natural sort
-//then do the sort based on the slopeOrder
+
 
 
 //for every point p, compute the slope other points make with p
 //sort the slopes
 //check if 3 adjacent points have equal slopes
 
+
+//the final version of this project get 100/100
+//first do the natural sort
+//then do the sort based on the slopeOrder
+//use the property of mergesort(stable)
+//add the check so there won't be sub-segment and pass the time test
 public class FastCollinearPoints{
     private List<LineSegment> lineSegments = new ArrayList<>();
     public FastCollinearPoints(Point[] points) {
@@ -39,6 +43,10 @@ public class FastCollinearPoints{
         for( int i = 0; i<points.length && !interrupted(); i++) {
             Comparator<Point> slopeOrder = points[i].slopeOrder();
             Arrays.sort(points, slopeOrder);
+            for(int k = 0; k<points.length; k++) {
+                StdOut.print(points[k] + " ");
+            }
+            StdOut.println();
             int j = 2;
             while(j < points.length) {
                 int start = j-1;

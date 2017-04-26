@@ -14,6 +14,12 @@ import java.util.*;
 //sort the slopes
 //check if 3 adjacent points have equal slopes
 
+
+//The second version, didn't use the hashmap
+//just use the natural sort and the sort with slopeOrder
+//but has some error that the linesegment has some redundant items
+//got a 93 score
+
 public class FastCollinearPoints2{
     private Point[] mypoints;
     private LineSegment[] lineSegment;
